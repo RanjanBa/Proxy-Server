@@ -1,4 +1,5 @@
 #include<iostream>
+#include <fstream>
 #include<thread>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -15,7 +16,7 @@ using namespace std;
 int proxy_socket_id;
 
 void connectToRemoteServer(string url) {
-    string get_http = "GET / HTTP/1.1\r\nHost: " + url + "\r\nConnection: close\r\n\r\n";
+    string get_http = "GET " + url + "\r\nConnection: close\r\n\r\n";
     struct hostent *host;
     const char *char_url = url.c_str();
     host = gethostbyname(char_url);
@@ -52,16 +53,27 @@ void connectToRemoteServer(string url) {
     string html;
     while((data_len = recv(remote_socket, buffer, sizeof(buffer), 0)) > 0) {
         int idx = 0;
-        html.append(buffer);
-        // while(buffer[idx] >= 32 || buffer[idx] == '\n' || buffer[idx] == '\r') {
-        //     html += buffer[idx];
-        //     idx++;
-        // }
+        while(idx < data_len) {
+            html += buffer[idx];
+            idx++;
+        }
         cout << "Data recv length : " << data_len << endl;
     }
+    
+    fstream file; 
+    file.open("test.html", ios::out); 
+  
+    if(!file) 
+    {
+        cout << html << endl;
+        cout << html.size() << endl;
+        cout <<"Error in creating file!!!"; 
+        return; 
+    } 
+  
+    file << html; 
+    file.close();
 
-    cout << html << endl;
-    cout << html.size() << endl;
     shutdown(remote_socket, SHUT_RDWR);
     close(remote_socket);
 }
