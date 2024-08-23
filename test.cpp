@@ -1,18 +1,8 @@
 #include <iostream>
-#include <fstream>
-#include <thread>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <string.h>
+#include <string>
 #include <curl/curl.h>
 
-#define PORT_NUMBER 8080
-
 using namespace std;
-
-int proxy_socket_id;
 
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
@@ -20,7 +10,7 @@ static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *use
     return size * nmemb;
 }
 
-void connectToRemoteServer(char url[])
+int main(void)
 {
     CURL *curl;
     CURLcode res;
@@ -29,6 +19,7 @@ void connectToRemoteServer(char url[])
     curl = curl_easy_init();
     if (curl)
     {
+        char url[] = "https://reqres.in/api/users?page=2";
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
@@ -43,29 +34,6 @@ void connectToRemoteServer(char url[])
         curl_easy_cleanup(curl);
 
         std::cout << readBuffer << std::endl;
-        fstream file;
-        file.open("index.html", ios::out);
-
-        if (!file)
-        {
-            cout << "Error in creating file!!!";
-            return;
-        }
-
-        file << readBuffer;
-        file.close();
     }
-
-}
-
-int main(int argc, char *argv[])
-{
-    if (argc < 1)
-    {
-        cout << "Give url" << endl;
-        return 0;
-    }
-    char *url = argv[1];
-    connectToRemoteServer(url);
     return 0;
 }
